@@ -10,7 +10,14 @@ class MyTestApp : public OgreBites::ApplicationContext, public OgreBites::InputL
 public:
     MyTestApp();
     void setup(void);
+    void setupLight();
+    void setupCamera();
+
+    void populateWithBalls();
+    void renderMolecule();
+
     bool keyPressed(const OgreBites::KeyboardEvent& evt);
+    bool keyReleased(const OgreBites::KeyboardEvent &evt);
     bool mousePressed(const OgreBites::MouseButtonEvent& evt);
     bool mouseReleased(const OgreBites::MouseButtonEvent &evt);
     bool mouseWheelRolled(const OgreBites::MouseWheelEvent& evt);
@@ -20,8 +27,15 @@ private:
     Ogre::SceneNode* lightNode;
     Ogre::SceneNode* camNode;
 
-    bool LMB;
-    bool RMB;
+    bool LMB = false;
+    bool RMB = false;
+    int MOD = 0;
+
+    double scrollSpeed = 30;
+    double angularSpeed = 0.002;
+
+    std::vector<Ogre::Entity*> entities;
+    std::vector<Ogre::SceneNode*> nodes;
 };
 
 #endif // MYTESTAPP_H

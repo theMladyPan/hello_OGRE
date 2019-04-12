@@ -4,7 +4,7 @@ using namespace std;
 
 int main()
 {
-    MyTestApp app;
+     MyTestApp app;
      app.initApp();
      app.getRoot()->startRendering();
      app.closeApp();

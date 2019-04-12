@@ -23,8 +23,8 @@ bool MyTestApp::mouseWheelRolled(const OgreBites::MouseWheelEvent& evt){
 bool MyTestApp::mouseMoved(const OgreBites::MouseMotionEvent &evt)
 {
     if(LMB){
-        camNode->rotate(Ogre::Vector3(0,1,0),Ogre::Radian(0.002*evt.xrel));
-        camNode->rotate(Ogre::Vector3(1,0,0),Ogre::Radian(0.002*evt.yrel));
+        camNode->rotate(Ogre::Vector3(0,1,0),Ogre::Radian(angularSpeed * evt.xrel));
+        camNode->rotate(Ogre::Vector3(1,0,0),Ogre::Radian(angularSpeed * evt.yrel));
     }else if (RMB) {
         if(evt.xrel != 0){
             moveNode(camNode,Eigen::Vector3f(-evt.xrel, 0, 0));
@@ -39,7 +39,6 @@ bool MyTestApp::mouseMoved(const OgreBites::MouseMotionEvent &evt)
 
     return true;
 }
-
 
 
 bool MyTestApp::mousePressed(const OgreBites::MouseButtonEvent& evt){
@@ -69,10 +68,25 @@ bool MyTestApp::mouseReleased(const OgreBites::MouseButtonEvent &evt)
 
 bool MyTestApp::keyPressed(const OgreBites::KeyboardEvent& evt)
 {
-    // cout<<evt.keysym.mod<<"\n";
+    // MODs:
     // ctrl 64
     // alt 256
     // shift 1
+
+    switch (static_cast<int>(evt.keysym.mod)){
+    case 64:
+        // ctrl
+        MOD = CTRL;
+        break;
+    case 256:
+        MOD = ALT;
+        break;
+    case 1:
+        MOD = SHIFT;
+        break;
+    default:
+        break;
+    }
 
     switch (evt.keysym.sym) {
     case OgreBites::SDLK_UP:
@@ -103,6 +117,14 @@ bool MyTestApp::keyPressed(const OgreBites::KeyboardEvent& evt)
     return true;
 }
 
+bool MyTestApp::keyReleased(const OgreBites::KeyboardEvent &evt)
+{
+    MOD = evt.keysym.mod;
+    return true;
+}
+
+
+
 void MyTestApp::setup(void)
 {
     // do not forget to call the base first
@@ -119,15 +141,29 @@ void MyTestApp::setup(void)
     shadergen->addSceneManager(scnMgr);
     // scnMgr->setAmbientLight(Ogre::ColourValue(.5, .5, .5));
 
+
+    setupLight();
+    setupCamera();
+
+    // finally something to render
+    //populateWithBalls();
+    renderMolecule();
+}
+
+void MyTestApp::setupLight()
+{
     // without light we would just get a black screen
     Ogre::Light* light = scnMgr->createLight("MainLight");
     lightNode = scnMgr->getRootSceneNode()->createChildSceneNode();
-    lightNode->setPosition(0, 100, 1350);
+    lightNode->setPosition(0, 0, 1000);
     lightNode->attachObject(light);
+}
 
+void MyTestApp::setupCamera()
+{
     // also need to tell where we are
     camNode = scnMgr->getRootSceneNode()->createChildSceneNode();
-    camNode->setPosition(0, 0, 3000);
+    camNode->setPosition(0, 0, 1000);
     camNode->lookAt(Ogre::Vector3(0, 0, -1), Ogre::Node::TS_PARENT);
 
     // create the camera
@@ -138,25 +174,31 @@ void MyTestApp::setup(void)
 
     // and tell it to render into the main window
     getRenderWindow()->addViewport(cam);
+}
 
-    // finally something to render
-    /*
-    Ogre::Entity* ent = scnMgr->createEntity("athene.mesh");
-    Ogre::SceneNode* node = scnMgr->getRootSceneNode()->createChildSceneNode();
-    node->attachObject(ent);
-    *//*
-    Ogre::Entity* ent2 = scnMgr->createEntity("ogrehead.mesh");
-    Ogre::SceneNode* node2 = scnMgr->getRootSceneNode()->createChildSceneNode();
-    node2->setPosition(10,20,10);
-    node2->attachObject(ent2);
-    */
-
-    std::vector<Ogre::Entity*> entities;
-    std::vector<Ogre::SceneNode*> nodes;
+void MyTestApp::populateWithBalls()
+{
     for (int i=0; i<1000; i++){
         entities.push_back(scnMgr->createEntity("sphere.mesh"));
         nodes.push_back(scnMgr->getRootSceneNode()->createChildSceneNode());
         nodes.back()->setPosition(2500-random()%5000, 2500-random()%5000, 2500-random()%5000);
         nodes.back()->attachObject(entities.back());
+    }
+}
+
+void MyTestApp::renderMolecule()
+{
+    auto entity0(scnMgr->createEntity("sphere.mesh"));
+    nodes.push_back(scnMgr->getRootSceneNode()->createChildSceneNode());
+    nodes.back()->setPosition(0, 0, 0);
+    nodes.back()->attachObject(entity0);
+    for (auto i=0; i<100; i++){
+        entities.push_back(scnMgr->createEntity("sphere.mesh"));
+        nodes.push_back(nodes.back()->createChildSceneNode());
+        nodes.back()->setPosition(200,0,0);
+        nodes.back()->roll(Ogre::Radian(3.1416/12));
+        nodes.back()->pitch(Ogre::Radian(3.1416/12));
+        nodes.back()->attachObject(entities.back());
+        // moveNode(nodes.back(),UP);
     }
 }

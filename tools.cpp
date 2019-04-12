@@ -18,7 +18,7 @@ Ogre::Vector3 extractTranslation(const Eigen::Matrix4f& htm){
 }
 
 void moveNode(Ogre::SceneNode* node, const Eigen::Vector3f& where){
-    Ogre::Matrix4 htmNode(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1);
+    Ogre::Matrix4 htmNode(getIdentity());
     Ogre::Matrix3 rotMat;
     Ogre::Quaternion nodeOrientation(node->getOrientation());
 
@@ -38,27 +38,27 @@ void moveNode(Ogre::SceneNode* node, const Eigen::Vector3f& where){
     node->translate(extractTranslation(eTrans));
 }
 
-void moveNode(Ogre::SceneNode* node, const Direction& dir){
+void moveNode(Ogre::SceneNode* node, const Direction& dir, const double distance){
     Eigen::Vector3f pos;
     pos << 0, 0, 0;
     switch (dir) {
     case UP:
-        pos << 0, 10, 0;
+        pos << 0, distance, 0;
         break;
     case DOWN:
-        pos << 0, -10, 0;
+        pos << 0, -distance, 0;
         break;
     case LEFT:
-        pos << -10, 0, 0;
+        pos << -distance, 0, 0;
         break;
     case RIGHT:
-        pos << 10, 0, 0;
+        pos << distance, 0, 0;
         break;
     case FORWARD:
-        pos << 0, 0, -10;
+        pos << 0, 0, -distance;
         break;
     case BACKWARD:
-        pos << 0, 0, 10;
+        pos << 0, 0, distance;
     default:
         break;
     }
@@ -66,3 +66,17 @@ void moveNode(Ogre::SceneNode* node, const Direction& dir){
     moveNode(node, pos);
 }
 
+
+Ogre::Matrix4 getIdentity()
+{
+    Ogre::Matrix4 out;
+    EigenToOgreMatrix(Eigen::MatrixXf::Identity(4,4), out);
+    return out;
+}
+
+void EigenToOgreMatrix(const Eigen::Matrix4f &inpArr, Ogre::Matrix4 &outArr)
+{
+    for(auto i=0; i<16; i++){
+        outArr[i/4][i%4] = inpArr(i/4, i%4);
+    }
+}
